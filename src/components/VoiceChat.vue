@@ -4,16 +4,21 @@
       <VoiceSelector @voice-selected="setVoice" />
     </div>
 
-    <h1 class="text-2xl font-bold mb-2">Voice Chat with ChatGPT</h1>
+    <h1 class="text-3xl font-extrabold mb-8 md:text-5xl">Voice Chat with ChatGPT</h1>
 
-    <div class="text-left mb-4 p-4 rounded max-w-2xl mx-auto" v-if="messages.length">
+    <div class="text-left p-4 rounded max-w-2xl mx-auto" v-if="messages.length">
       <div v-for="(msg, index) in messages" :key="index">
         <p><strong>{{ msg.role }}:</strong> {{ msg.content }}</p>
       </div>
     </div>
 
+
+    <div class="rounded max-w-[200px] h-[40px] my-1 mx-auto">
+      <Amplifier :recording="isRecording" :aiSpeech="aiSpeechStream" />
+    </div>
+
     <div>
-      <button class="border border-gray-900 py-1 px-3 rounded mr-4" @click="startRecording">
+      <button class="border border-gray-900 py-1 px-3 rounded" :class="{'mr-4': isRecording}" @click="startRecording">
         <font-awesome-icon :icon="['fas', 'microphone']" /> Speak
       </button>
       <button v-if="isRecording" class="border border-gray-900 py-1 px-3 rounded" @click="stopRecording">
@@ -28,6 +33,7 @@
 import { defineComponent, ref } from 'vue';
 import axios from 'axios';
 import VoiceSelector from './VoiceSelector.vue';
+import Amplifier from './Amplifier.vue';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -37,6 +43,7 @@ interface Message {
 export default defineComponent({
   name: 'VoiceChat',
   components: {
+    Amplifier,
     VoiceSelector,
   },
   setup() {
@@ -44,6 +51,8 @@ export default defineComponent({
     const messages = ref<Message[]>([]);
     const isRecording = ref(false);
     const selectedVoice = ref<SpeechSynthesisVoice | null>(null);
+    const aiSpeechStream = ref<MediaStream | null>(null);
+    const audioContext = new AudioContext();
     let recognition: SpeechRecognition | null = null;
 
     const setVoice = (voice: SpeechSynthesisVoice) => {
@@ -125,7 +134,18 @@ export default defineComponent({
         utterance.voice = selectedVoice.value;
       }
       utterance.lang = 'en-US';
+
+      const dest = audioContext.createMediaStreamDestination();
+      utterance.onstart = () => {
+        aiSpeechStream.value = dest.stream;
+      };
+      utterance.onend = () => {
+        aiSpeechStream.value = null;
+      };
       synthesis.speak(utterance);
+
+      const source = audioContext.createMediaStreamSource(dest.stream);
+      source.connect(audioContext.destination);
     };
 
     return {
@@ -134,7 +154,8 @@ export default defineComponent({
       stopRecording,
       setVoice,
       showVoice,
-      isRecording
+      isRecording,
+      aiSpeechStream
     };
   },
 });
