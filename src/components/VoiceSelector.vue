@@ -1,24 +1,24 @@
 <template>
-  <div class="py-2 px-2 max-w-xs border border-gray-900 rounded w-fit bg-white" :class="{ '!px-4 pb-4': showModal }">
-    <div @click="showModal = !showModal" class="flex items-center justify-between" :class="{ 'mb-2': showModal }">
-      <h5 class="text-sm text-left" :class="{ 'mr-4': showModal }">
+  <div class="py-2 px-2 max-w-xs border border-cyan-500 rounded w-fit bg-gray-900 text-white" :class="{ '!px-4 pb-4': showModal }">
+    <div @click="showModal = !showModal" class="flex items-center justify-between cursor-pointer" :class="{ 'mb-2': showModal }">
+      <h5 class="text-sm text-left text-cyan-400" :class="{ 'mr-4': showModal }">
         {{selectedVoiceName.split(' ')[0]}} <font-awesome-icon :icon="['fasr', 'comment-dots']" />
       </h5>
-      <button v-if="showModal" class="text-xs" @click.stop="showModal = !showModal">{{showModal ? 'Close' : 'Open'}}</button>
+      <button v-if="showModal" class="text-xs text-cyan-500 hover:text-cyan-300 transition-colors" @click.stop="showModal = !showModal">{{showModal ? 'Close' : 'Open'}}</button>
     </div>
     <div v-if="showModal" class="flex flex-col text-xs">
       <div class="">
         <input
           v-model="text"
           type="text"
-          class="w-full p-2 border border-gray-900 rounded mb-2"
+          class="w-full p-2 border border-cyan-500 bg-gray-800 rounded mb-2 text-cyan-400 placeholder-cyan-600"
           placeholder="Enter text to speak"
         />
       </div>
-      <div class="flex items-center justify-between">
+      <div class="flex items-stretch justify-between h-full">
         <select
           v-model="selectedVoiceName"
-          class="w-full h-fit p-2 mr-4 border border-gray-900 rounded"
+          class="w-full h-full p-2 mr-4 border border-cyan-500 bg-gray-800 rounded text-cyan-400 placeholder-cyan-600"
           @change="selectVoice"
         >
           <option v-for="(voice, index) in voices" :key="index" :value="voice.name">
@@ -27,7 +27,7 @@
         </select>
         <button
           @click="speak"
-          class="py-1 px-4 h-fit border border-gray-900 rounded"
+          class="py-1 px-4 h-full border border-cyan-500 bg-gray-800 rounded text-cyan-400 hover:bg-cyan-500 hover:text-gray-900 transition-colors"
         >
           Speak
         </button>

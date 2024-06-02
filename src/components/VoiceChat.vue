@@ -1,14 +1,19 @@
 <template>
-  <div class="relative p-4 text-center">
+  <div class="relative p-4 text-center bg-gray-900 text-white min-h-screen">
     <div class="absolute top-4 right-4">
       <VoiceSelector @voice-selected="setVoice" />
     </div>
 
-    <h1 class="text-3xl font-extrabold mb-8 md:text-5xl">Voice Chat with ChatGPT</h1>
+    <h1 class="text-3xl font-extrabold mb-8 md:text-5xl text-cyan-500 gradient-bg">Voice Chat with ChatGPT</h1>
 
-    <div class="text-left p-4 rounded max-w-2xl mx-auto" v-if="messages.length">
+    <div class="text-left p-4 max-w-lg mx-auto" v-if="messages.length">
       <div v-for="(msg, index) in messages" :key="index">
-        <p><strong>{{ msg.role }}:</strong> {{ msg.content }}</p>
+        <div v-if="msg.role === 'user'" class="bg-gray-800 text-white p-3 rounded-lg w-fit max-w-[80%] ml-0 mr-auto mb-4">
+          <strong class="mr-4">User:</strong> {{ msg.content }}
+        </div>
+        <div v-else class="bg-gray-700 text-white p-3 rounded-lg w-fit max-w-[80%] ml-auto mr-0  mb-4">
+          <strong class="mr-4">AI:</strong> {{ msg.content }}
+        </div>
       </div>
     </div>
 
@@ -18,10 +23,10 @@
     </div>
 
     <div>
-      <button class="border border-gray-900 py-1 px-3 rounded" :class="{'mr-4': isRecording}" @click="startRecording">
+      <button class="border border-gray-900 py-1 px-3 rounded hover:bg-cyan-500 hover:text-gray-900 transition-colors" :class="{'mr-4': isRecording}" @click="startRecording">
         <font-awesome-icon :icon="['fas', 'microphone']" /> Speak
       </button>
-      <button v-if="isRecording" class="border border-gray-900 py-1 px-3 rounded" @click="stopRecording">
+      <button v-if="isRecording" class="border border-gray-900 py-1 px-3 rounded hover:bg-cyan-500 hover:text-gray-900 transition-colors" @click="stopRecording">
         <font-awesome-icon :icon="['fas', 'stop']" />
       </button>
     </div>
@@ -162,4 +167,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.gradient-bg {
+  background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 </style>
