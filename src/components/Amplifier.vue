@@ -99,7 +99,7 @@ export default defineComponent({
         canvas.value.width = width;
         canvas.value.height = height;
 
-        canvasCtx.fillStyle = 'white';
+        canvasCtx.fillStyle = 'black';
         canvasCtx.fillRect(0, 0, width, height);
 
         canvasCtx.lineWidth = 2;
@@ -149,18 +149,18 @@ export default defineComponent({
       }
     );
 
-    watch(
-      () => props.aiSpeech,
-      (newStream) => {
-        if (newStream) {
-          startVisualization();
-        } else {
-          if (!props.recording) {
-            stopVisualization();
-          }
-        }
-      }
-    );
+    // watch(
+    //   () => props.aiSpeech,
+    //   (newStream) => {
+    //     if (newStream) {
+    //       startVisualization();
+    //     } else {
+    //       if (!props.recording) {
+    //         stopVisualization();
+    //       }
+    //     }
+    //   }
+    // );
 
     onMounted(() => {
       if (canvas.value) {
