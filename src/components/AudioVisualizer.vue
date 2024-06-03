@@ -3,17 +3,28 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  PropType,
+} from 'vue';
 
 export default defineComponent({
-  name: 'Amplifier',
+  name: 'AudioVisualizer',
   props: {
     recording: {
       type: Boolean,
       required: true,
     },
     aiSpeech: {
-      type: Object as () => MediaStream | null,
+      type: Object as PropType<MediaStream | null>,
+      default: null,
+    },
+    color: {
+      type: String,
       default: null,
     },
   },
@@ -27,7 +38,9 @@ export default defineComponent({
     let aiSpeechSource: MediaStreamAudioSourceNode | null = null;
 
     const startVisualization = async () => {
-      if (!canvas.value) return;
+      if (!canvas.value) {
+        return;
+      }
 
       if (!audioContext) {
         audioContext = new AudioContext();
@@ -45,16 +58,26 @@ export default defineComponent({
       }
 
       if (props.recording && !userMicrophoneSource) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        userMicrophoneSource = audioContext.createMediaStreamSource(stream);
-        userMicrophoneSource.connect(analyser);
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          userMicrophoneSource = audioContext.createMediaStreamSource(stream);
+          userMicrophoneSource.connect(analyser);
+        } catch (error) {
+          console.error('Error accessing user microphone:', error);
+          return;
+        }
       }
 
       if (props.aiSpeech) {
         if (aiSpeechSource) {
           aiSpeechSource.disconnect();
         }
-        console.log('AI Speech:', props.aiSpeech, aiSpeechSource)
+        if (props.aiSpeech.getAudioTracks().length === 0) {
+          console.error('AI speech stream has no audio tracks');
+          return;
+        }
         aiSpeechSource = audioContext.createMediaStreamSource(props.aiSpeech);
         aiSpeechSource.connect(analyser);
       }
@@ -85,10 +108,14 @@ export default defineComponent({
     };
 
     const draw = () => {
-      if (!canvas.value || !analyser || !dataArray) return;
+      if (!canvas.value) {
+        return;
+      }
 
       const canvasCtx = canvas.value.getContext('2d');
-      if (!canvasCtx) return;
+      if (!canvasCtx) {
+        return;
+      }
 
       const drawVisual = () => {
         if (!analyser || !dataArray || !canvas.value) return;
@@ -99,17 +126,12 @@ export default defineComponent({
         canvas.value.width = width;
         canvas.value.height = height;
 
-        canvasCtx.fillStyle = 'black';
+        canvasCtx.fillStyle = 'transparent';
         canvasCtx.fillRect(0, 0, width, height);
 
         canvasCtx.lineWidth = 2;
 
-        const gradient = canvasCtx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, 'red');
-        gradient.addColorStop(0.5, 'yellow');
-        gradient.addColorStop(1, 'green');
-
-        canvasCtx.strokeStyle = gradient;
+        canvasCtx.strokeStyle = props.color || 'white';
 
         canvasCtx.beginPath();
 
@@ -140,7 +162,7 @@ export default defineComponent({
 
     watch(
       () => props.recording,
-      (newVal) => {
+      newVal => {
         if (newVal) {
           startVisualization();
         } else {
@@ -149,49 +171,26 @@ export default defineComponent({
       }
     );
 
-    // watch(
-    //   () => props.aiSpeech,
-    //   (newStream) => {
-    //     if (newStream) {
-    //       startVisualization();
-    //     } else {
-    //       if (!props.recording) {
-    //         stopVisualization();
-    //       }
-    //     }
-    //   }
-    // );
+    watch(
+      () => props.aiSpeech,
+      newStream => {
+        if (newStream) {
+          startVisualization();
+        } else {
+          if (!props.recording) {
+            stopVisualization();
+          }
+        }
+      }
+    );
 
     onMounted(() => {
       if (canvas.value) {
         resizeCanvas();
+        startVisualization();
         window.addEventListener('resize', resizeCanvas);
       }
     });
-
-    // onMounted(() => {
-    //   if (canvas.value) {
-    //     const resumeAudioContext = async () => {
-    //       await initializeAudioContext();
-    //       resizeCanvas();
-    //       window.addEventListener('resize', resizeCanvas);
-    //     };
-    //
-    //     // Attach a user gesture event to resume AudioContext
-    //     window.addEventListener('click', resumeAudioContext, { once: true });
-    //     window.addEventListener('keydown', resumeAudioContext, { once: true });
-    //   }
-    // });
-    //
-    // const initializeAudioContext = async () => {
-    //   if (!audioContext) {
-    //     audioContext = new AudioContext();
-    //   }
-    //
-    //   if (audioContext.state === 'suspended') {
-    //     await audioContext.resume();
-    //   }
-    // };
 
     const resizeCanvas = () => {
       if (canvas.value) {
@@ -212,6 +211,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-</style>
