@@ -1,44 +1,78 @@
 <template>
-  <div class="relative p-4 text-center bg-gray-900 text-white min-h-screen">
-    <div class="absolute top-4 right-4">
-      <VoiceSelector @voice-selected="setVoice" />
-    </div>
-
-    <h1 class="text-3xl font-extrabold mb-8 md:text-5xl text-cyan-500 gradient-bg">Voice Chat with ChatGPT</h1>
-
-    <div class="text-left p-4 max-w-lg mx-auto" v-if="messages.length">
+  <nav
+    class="absolute top-0 left-0 right-0 bg-gray-400/25 m-4 flex justify-between items-center gap-4 rounded py-1 px-2 shadow-lg z-10 backdrop-blur-sm"
+  >
+    <h1 class="flex gap-1 md:gap-2 items-baseline">
+      <span class="font-bold md:text-3xl gradient-bg">Voice Chat</span>
+      <span class="text-xs md:text-lg font-bold text-gray-800"
+        >with ChatGPT</span
+      >
+    </h1>
+    <VoiceSelector @voice-selected="setVoice" />
+  </nav>
+  <div
+    class="relative w-screen h-screen py-20 overflow-hidden overflow-y-auto p-4 text-center bg-gray-800 text-white min-h-screen"
+  >
+    <div
+      class="text-left text-xs sm:text-sm md:text-md max-w-lg mx-auto"
+      v-if="messages.length"
+    >
       <div v-for="(msg, index) in messages" :key="index">
-        <div v-if="msg.role === 'user'" class="bg-gray-800 text-white p-3 rounded-lg w-fit max-w-[80%] ml-0 mr-auto mb-4">
-          <strong class="mr-4">User:</strong> {{ msg.content }}
+        <div
+          v-if="msg.role === 'user'"
+          class="flex mb-4 text-white w-full ml-0"
+        >
+          <div
+            class="flex items-center justify-center mr-2 p-3 w-12 h-12 rounded-full bg-gray-700 shadow-lg"
+          >
+            U
+          </div>
+          <div class="rounded-lg p-3 bg-gray-700 shadow-lg max-w-[65%]">
+            {{ msg.content }}
+          </div>
         </div>
-        <div v-else class="bg-gray-700 text-white p-3 rounded-lg w-fit max-w-[80%] ml-auto mr-0  mb-4">
-          <strong class="mr-4">AI:</strong> {{ msg.content }}
+        <div v-else class="flex text-white w-full mr-0 mb-4">
+          <div class="rounded-lg p-3 bg-gray-700 shadow-lg max-w-[65%] ml-auto">
+            {{ msg.content }}
+          </div>
+          <div
+            class="flex items-center justify-center ml-2 p-3 w-[50px] h-[50px] rounded-full bg-gray-700 shadow-lg fixed-size"
+          >
+            AI
+          </div>
         </div>
       </div>
     </div>
 
-
-    <div class="rounded max-w-[200px] h-[40px] my-1 mx-auto">
-      <Amplifier :recording="isRecording" :aiSpeech="aiSpeechStream" />
-    </div>
-
-    <div>
-      <button class="border border-gray-900 py-1 px-3 rounded hover:bg-cyan-500 hover:text-gray-900 transition-colors" :class="{'mr-4': isRecording}" @click="startRecording">
-        <font-awesome-icon :icon="['fas', 'microphone']" /> Speak
+    <div
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded w-fit bg-gray-400/25 backdrop-blur-sm max-w-lg"
+    >
+      <div v-if="isRecording" class="rounded max-w-[200px] h-[40px] mx-auto">
+        <AudioVisualizer :recording="isRecording" :aiSpeech="aiSpeechStream" />
+      </div>
+      <button
+        class="border border-gray-800 text-gray-400 bg-gray-800 hover:border-gray-400 hover:bg-gray-400 hover:text-gray-700 py-1 px-10 rounded shadow-lg"
+        :class="{ 'mr-4': isRecording }"
+        @click="startRecording"
+      >
+        <font-awesome-icon :icon="['fas', 'microphone']" />
       </button>
-      <button v-if="isRecording" class="border border-gray-900 py-1 px-3 rounded hover:bg-cyan-500 hover:text-gray-900 transition-colors" @click="stopRecording">
+      <button
+        v-if="isRecording"
+        class="border border-gray-800 text-gray-400 bg-gray-800 hover:border-gray-400 hover:bg-gray-400 hover:text-gray-700 py-1 px-10 rounded shadow-lg"
+        @click="stopRecording"
+      >
         <font-awesome-icon :icon="['fas', 'stop']" />
       </button>
     </div>
-
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 import axios from 'axios';
-import VoiceSelector from './VoiceSelector.vue';
-import Amplifier from './Amplifier.vue';
+import VoiceSelector from '../components/VoiceSelector.vue';
+import AudioVisualizer from '../components/AudioVisualizer.vue';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -48,7 +82,7 @@ interface Message {
 export default defineComponent({
   name: 'VoiceChat',
   components: {
-    Amplifier,
+    AudioVisualizer,
     VoiceSelector,
   },
   setup() {
@@ -59,6 +93,10 @@ export default defineComponent({
     const aiSpeechStream = ref<MediaStream | null>(null);
     const audioContext = new AudioContext();
     let recognition: SpeechRecognition | null = null;
+
+    const haveSound = computed(
+      () => !!aiSpeechStream.value || isRecording.value
+    );
 
     const setVoice = (voice: SpeechSynthesisVoice) => {
       selectedVoice.value = voice;
@@ -79,27 +117,29 @@ export default defineComponent({
         const transcript = event.results[0][0].transcript;
         console.log('Transcript:', transcript);
 
-        // Add user's message to conversation history
         messages.value.push({ role: 'user', content: transcript });
 
         const url = import.meta.env.VITE_CHATGPT_API_URL;
         const apiKey = import.meta.env.VITE_CHATGPT_API_KEY;
 
         try {
-          const res = await axios.post(url, {
-            messages: messages.value,
-            model: 'gpt-3.5-turbo',
-            max_tokens: 100,
-            temperature: 0.9,
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`,
+          const res = await axios.post(
+            url,
+            {
+              messages: messages.value,
+              model: 'gpt-3.5-turbo',
+              max_tokens: 100,
+              temperature: 0.9,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${apiKey}`,
+              },
             }
-          });
+          );
           const assistantMessage = res.data.choices[0].message.content.trim();
 
-          // Add assistant's response to conversation history
           messages.value.push({ role: 'assistant', content: assistantMessage });
 
           speakResponse(assistantMessage);
@@ -154,13 +194,15 @@ export default defineComponent({
     };
 
     return {
+      audioContext,
       messages,
       startRecording,
       stopRecording,
       setVoice,
       showVoice,
       isRecording,
-      aiSpeechStream
+      aiSpeechStream,
+      haveSound,
     };
   },
 });
@@ -168,7 +210,12 @@ export default defineComponent({
 
 <style scoped>
 .gradient-bg {
-  background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+  background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.no-gradient {
+  background: none;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
