@@ -1,11 +1,12 @@
 ## Voice Chat Middleware for ChatGPT
 
-![Voice Chat screenshot](public/voice-chat-color.png)
+![Voice Chat screenshot](public/voice-chat-screenshot.png)
 
 This project is a Vue 3 application built with TypeScript and Vite, designed to act as a middleware for voice-based interactions with the ChatGPT API. Users can speak their questions into the application, which will then transcribe their speech into text, send it to the ChatGPT API, and play back the response using speech synthesis. This allows for a seamless voice-to-voice interaction with ChatGPT.
 
 ### Features
 
+- **Voice Selector**: Select synthesized voice persona.
 - **Voice to Text**: Capture user's voice using the Web Speech API and transcribe it into text.
 - **ChatGPT API Integration**: Send transcribed text to the ChatGPT API and receive a response.
 - **Text to Speech**: Convert the ChatGPT response back to speech using the Web Speech API.
