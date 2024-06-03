@@ -45,25 +45,27 @@
     </div>
 
     <div
-      class="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded w-fit bg-gray-400/25 backdrop-blur-sm max-w-lg"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded w-[100vw-4rem] sm:w-fit bg-gray-400/25 backdrop-blur-sm"
     >
       <div v-if="isRecording" class="rounded max-w-[200px] h-[40px] mx-auto">
         <AudioVisualizer :recording="isRecording" :aiSpeech="aiSpeechStream" />
       </div>
-      <button
-        class="border border-gray-800 text-gray-400 bg-gray-800 hover:border-gray-400 hover:bg-gray-400 hover:text-gray-700 py-1 px-10 rounded shadow-lg"
-        :class="{ 'mr-4': isRecording }"
-        @click="startRecording"
-      >
-        <font-awesome-icon :icon="['fas', 'microphone']" />
-      </button>
-      <button
-        v-if="isRecording"
-        class="border border-gray-800 text-gray-400 bg-gray-800 hover:border-gray-400 hover:bg-gray-400 hover:text-gray-700 py-1 px-10 rounded shadow-lg"
-        @click="stopRecording"
-      >
-        <font-awesome-icon :icon="['fas', 'stop']" />
-      </button>
+      <div class="flex items-center justify-center">
+        <button
+          class="border border-gray-800 text-gray-400 bg-gray-800 hover:border-gray-400 hover:bg-gray-400 hover:text-gray-700 py-1 px-10 rounded shadow-lg"
+          :class="{ 'mr-4': isRecording }"
+          @click="startRecording"
+        >
+          <font-awesome-icon :icon="['fas', 'microphone']" />
+        </button>
+        <button
+          v-if="isRecording"
+          class="border border-gray-800 text-gray-400 bg-gray-800 hover:border-gray-400 hover:bg-gray-400 hover:text-gray-700 py-1 px-10 rounded shadow-lg"
+          @click="stopRecording"
+        >
+          <font-awesome-icon :icon="['fas', 'stop']" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
