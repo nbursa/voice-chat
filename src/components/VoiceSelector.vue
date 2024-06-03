@@ -1,33 +1,57 @@
 <template>
-  <div class="py-2 px-2 max-w-xs border border-cyan-500 rounded w-fit bg-gray-900 text-white" :class="{ '!px-4 pb-4': showModal }">
-    <div @click="showModal = !showModal" class="flex items-center justify-between cursor-pointer" :class="{ 'mb-2': showModal }">
-      <h5 class="text-sm text-left text-cyan-400" :class="{ 'mr-4': showModal }">
-        {{selectedVoiceName.split(' ')[0]}} <font-awesome-icon :icon="['fasr', 'comment-dots']" />
-      </h5>
-      <button v-if="showModal" class="text-xs text-cyan-500 hover:text-cyan-300 transition-colors" @click.stop="showModal = !showModal">{{showModal ? 'Close' : 'Open'}}</button>
+  <div
+    class="py-1 px-2 max-w-xs rounded w-fit bg-gray-800 border border-gray-800 hover:bg-gray-400 hover:border-gray-400 group transition-colors cursor-pointer"
+    :class="{ '!px-4 pb-4  hover:bg-gray-800': showModal }"
+  >
+    <div
+      @click="showModal = !showModal"
+      class="flex items-center justify-between"
+      :class="{ 'mb-2': showModal }"
+    >
+      <div class="text-sm text-left text-primary-light">
+        <span v-if="showModal">Select AI voice</span>
+        <font-awesome-icon
+          class="text-gray-400 group-hover:text-gray-800 transition-colors"
+          :class="{
+            'ml-4 text-primary-light group-hover:text-primary-light': showModal,
+          }"
+          :icon="['fasr', 'comment-dots']"
+        />
+      </div>
+      <button
+        v-if="showModal"
+        class="text-xs text-primary-light hover:text-gray-400 transition-colors"
+        @click.stop="showModal = !showModal"
+      >
+        {{ showModal ? 'Close' : 'Open' }}
+      </button>
     </div>
-    <div v-if="showModal" class="flex flex-col text-xs">
+    <div v-if="showModal" class="flex flex-col">
       <div class="">
         <input
           v-model="text"
           type="text"
-          class="w-full p-2 border border-cyan-500 bg-gray-800 rounded mb-2 text-cyan-400 placeholder-cyan-600"
+          class="w-full text-sm p-2 bg-gray-800 border-0 border-b-2 border-b-primary-light mb-2 text-primary-light placeholder-primary-lighter outline-none"
           placeholder="Enter text to speak"
         />
       </div>
       <div class="flex items-stretch justify-between h-full">
         <select
           v-model="selectedVoiceName"
-          class="w-full h-full p-2 mr-4 border border-cyan-500 bg-gray-800 rounded text-cyan-400 placeholder-cyan-600"
+          class="w-full h-full text-sm p-2 mr-4 outline-none bg-gray-800 border-0 border-b-2 border-b-primary-light text-primary-light placeholder-primary-lighter"
           @change="selectVoice"
         >
-          <option v-for="(voice, index) in voices" :key="index" :value="voice.name">
+          <option
+            v-for="(voice, index) in voices"
+            :key="index"
+            :value="voice.name"
+          >
             {{ voice.name }} ({{ voice.lang }})
           </option>
         </select>
         <button
           @click="speak"
-          class="py-1 px-4 h-full border border-cyan-500 bg-gray-800 rounded text-cyan-400 hover:bg-cyan-500 hover:text-gray-900 transition-colors"
+          class="inline-flex text-sm h-full py-2 px-4 border border-primary-light bg-gray-800 rounded text-primary-light hover:border-gray-400 hover:text-gray-400 transition-colors"
         >
           Speak
         </button>
@@ -53,13 +77,18 @@ export default defineComponent({
       voices.value = synth.getVoices();
 
       if (voices.value.length > 0) {
-        selectedVoiceName.value = voices.value[0].name;
-        emit('voice-selected', voices.value[0]);
+        const defaultVoice = voices.value.find(v =>
+          v.name.startsWith('Daniel')
+        );
+        selectedVoiceName.value = defaultVoice
+          ? defaultVoice.name
+          : voices.value[0].name;
+        emit('voice-selected', selectedVoiceName.value);
       }
     };
 
     const selectVoice = () => {
-      const voice = voices.value.find((v) => v.name === selectedVoiceName.value);
+      const voice = voices.value.find(v => v.name === selectedVoiceName.value);
       if (voice) {
         emit('voice-selected', voice);
       }
@@ -70,7 +99,7 @@ export default defineComponent({
 
       const synth = window.speechSynthesis;
       const utterance = new SpeechSynthesisUtterance(text.value);
-      const voice = voices.value.find((v) => v.name === selectedVoiceName.value);
+      const voice = voices.value.find(v => v.name === selectedVoiceName.value);
 
       if (voice) {
         utterance.voice = voice;
@@ -86,7 +115,7 @@ export default defineComponent({
       }
     });
 
-    watch(selectedVoiceName, (newVoiceName) => {
+    watch(selectedVoiceName, () => {
       selectVoice();
     });
 
@@ -96,11 +125,8 @@ export default defineComponent({
       voices,
       speak,
       selectVoice,
-      showModal
+      showModal,
     };
   },
 });
 </script>
-
-<style scoped>
-</style>
