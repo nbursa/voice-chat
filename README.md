@@ -1,7 +1,7 @@
 ## Voice Chat Middleware for ChatGPT
 
 <div style="display:flex;width:100%;align-items:center;gap:1rem;">
-<img src="public/Voice-chat-screenshot-mobile.png" alt="Voice Chat screenshot" style="width:30%;max-width:100%;height:auto;">
+<img src="public/Voice-chat-screenshot-mobile.png" alt="Voice Chat screenshot" style="width:25%;max-width:100%;height:auto;">
 <img src="public/Voice-chat-screenshot.png" alt="Voice Chat screenshot" style="width:70%;max-width:100%;height:auto;">
 </div>
 
